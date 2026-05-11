@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: nexusos
+    env: docker
+    plan: starter
+    healthCheckPath: /api/healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4288
+      - key: AUTH_REQUIRED
+        value: true
+      - key: NEXUSOS_WORKSPACE_DIR
+        value: /var/data/workspace
+      - key: NEXUSOS_DATA_DIR
+        value: /var/data/data
+      - key: NEXUSOS_ADMIN_EMAIL
+        sync: false
+      - key: NEXUSOS_ADMIN_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_PLANNER_MODEL
+        value: gpt-4o-mini
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+    disk:
+      name: nexusos-data
+      mountPath: /var/data
+      sizeGB: 1

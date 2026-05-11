@@ -1,0 +1,11 @@
+node_modules/
+data/
+workspace/
+*.log
+server-out.log
+server-err.log
+server4288-out.log
+server4288-err.log
+.env
+.DS_Store
+Thumbs.db

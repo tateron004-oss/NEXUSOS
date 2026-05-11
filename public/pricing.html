@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NexusOS Pricing</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="intake-body">
+  <main class="intake-shell pricing-shell">
+    <section class="intake-hero">
+      <div class="mark">NO</div>
+      <p class="eyebrow">NexusOS Subscriptions</p>
+      <h1>AI services for small-business growth.</h1>
+      <p>Choose a plan. NexusOS creates the workspace, landing page, assistant package, and service workflows.</p>
+    </section>
+    <section>
+      <div id="plans" class="pricing-grid"></div>
+      <form id="checkoutForm" class="intake-form">
+        <h2>Start Subscription Demo</h2>
+        <input id="selectedPlan" type="hidden" value="starter">
+        <div class="fields two">
+          <label>Name<input id="name" required placeholder="Jane Smith"></label>
+          <label>Email<input id="email" type="email" required placeholder="jane@example.com"></label>
+        </div>
+        <div class="fields two">
+          <label>Phone<input id="phone" placeholder="555-555-5555"></label>
+          <label>Business name<input id="businessName" required placeholder="Smith Cleaning Service"></label>
+        </div>
+        <div class="fields two">
+          <label>Business type<input id="industry" placeholder="Cleaning, catering, salon..."></label>
+          <label>Location<input id="location" placeholder="Atlanta"></label>
+        </div>
+        <label>What do you want NexusOS to help with?
+          <textarea id="needs" rows="4" placeholder="Website, AI assistant, social media, lead follow-up, phone workflow..."></textarea>
+        </label>
+        <button class="primary" type="submit">Create subscription workspace</button>
+        <pre id="checkoutResult">Choose a plan and create a subscriber workspace.</pre>
+      </form>
+    </section>
+  </main>
+  <script src="/pricing.js"></script>
+</body>
+</html>

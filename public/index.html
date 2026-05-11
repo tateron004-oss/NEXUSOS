@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NexusOS Command App</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <section id="loginView" class="login-view hidden">
+    <form id="loginForm" class="login-panel">
+      <div class="mark">NO</div>
+      <p class="eyebrow">NexusOS Secure Access</p>
+      <h1>Sign in to your AI services operating system.</h1>
+      <label>Email
+        <input id="loginEmail" type="email" autocomplete="username" value="admin@nexusos.local">
+      </label>
+      <label>Password
+        <input id="loginPassword" type="password" autocomplete="current-password" value="nexusos-admin">
+      </label>
+      <button class="primary" type="submit">Sign in</button>
+      <p class="login-note">Local default can be changed with `NEXUSOS_ADMIN_EMAIL` and `NEXUSOS_ADMIN_PASSWORD` before first launch.</p>
+    </form>
+  </section>
+
+  <aside class="rail">
+    <div class="brand">
+      <div class="mark">NO</div>
+      <div>
+        <strong>NexusOS</strong>
+        <span>Business command center</span>
+      </div>
+    </div>
+    <nav id="agentNav"></nav>
+    <section class="memory-card">
+      <span class="eyebrow">Memory</span>
+      <p id="memoryPreview">Loading NexusOS memory...</p>
+    </section>
+  </aside>
+
+  <main class="workspace">
+    <header class="top">
+      <div>
+        <span class="eyebrow">NexusOS Command App</span>
+        <h1 id="agentTitle">Nexus Prime</h1>
+        <p id="agentPromise">clarity, focus, and the next best move</p>
+      </div>
+      <div class="status">
+        <strong id="outputCount">0</strong>
+        <span>saved outputs</span>
+        <button id="logoutBtn" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <section class="grid">
+      <form id="commandForm" class="panel command-panel">
+        <div class="panel-head">
+          <h2>New Command</h2>
+          <span id="activeAgentChip">Nexus Prime</span>
+        </div>
+        <label>What do you need?
+          <textarea id="request" rows="8" placeholder="Example: Prepare me for an investor call about AgriNexus and give me the strongest points to make."></textarea>
+        </label>
+        <div class="fields">
+          <label>Objective
+            <input id="objective" placeholder="Win support, clarify strategy, create content...">
+          </label>
+          <label>Audience
+            <input id="audience" placeholder="Investor, partner, field team, myself...">
+          </label>
+          <label>Urgency
+            <select id="urgency">
+              <option value="normal">Normal</option>
+              <option value="today">Today</option>
+              <option value="critical">Critical</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions">
+          <button class="primary" type="submit">Generate command brief</button>
+          <button id="buildBusinessBtn" type="button">Build full business kit</button>
+          <button id="clearBtn" type="button">Clear</button>
+        </div>
+      </form>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Daily Command</h2>
+          <span>focus</span>
+        </div>
+        <div class="daily">
+          <div><strong>1</strong><p>Define the business outcome.</p></div>
+          <div><strong>2</strong><p>Pick the agent that fits the job.</p></div>
+          <div><strong>3</strong><p>Generate the brief and save it.</p></div>
+          <div><strong>4</strong><p>Turn the brief into one next action.</p></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel output-panel">
+      <div class="panel-head">
+        <h2>Generated Brief</h2>
+        <div class="actions compact">
+          <button id="copyBtn" type="button">Copy</button>
+          <button id="saveBtn" class="primary" type="button">Save to NexusOS</button>
+        </div>
+      </div>
+      <pre id="output">Choose an agent, enter a request, and generate a command brief.</pre>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Recent Outputs</h2>
+        <span>saved locally</span>
+      </div>
+      <div id="recentOutputs" class="outputs"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Business Builder Clients</h2>
+        <span>launch kits</span>
+      </div>
+      <div id="clientList" class="outputs"></div>
+    </section>
+
+    <section class="panel client-workspace">
+      <div class="panel-head">
+        <div>
+          <h2>Client Workspace Dashboard</h2>
+          <p id="clientWorkspaceSub">Select a client to run workflows.</p>
+        </div>
+        <a id="clientWebsiteLink" class="link-button hidden" href="#" target="_blank" rel="noreferrer">Open website</a>
+      </div>
+      <div id="clientWorkspace" class="client-empty">
+        Choose a Business Builder client above to open the workspace.
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

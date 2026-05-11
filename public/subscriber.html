@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NexusOS Subscriber Portal</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="intake-body">
+  <main class="subscriber-shell">
+    <section id="subscriberLogin" class="subscriber-hero">
+      <div>
+        <div class="mark">NO</div>
+        <p class="eyebrow">Subscriber Login</p>
+        <h1>Access your NexusOS workspace.</h1>
+      </div>
+      <form id="subscriberLoginForm" class="login-inline">
+        <input id="subscriberEmail" type="email" placeholder="Email">
+        <input id="subscriberPassword" type="password" placeholder="Password">
+        <button class="primary" type="submit">Sign in</button>
+      </form>
+    </section>
+    <section class="subscriber-hero">
+      <div>
+        <div class="mark">NO</div>
+        <p class="eyebrow">Subscriber Portal</p>
+        <h1 id="portalTitle">Loading workspace...</h1>
+        <p id="portalSub">NexusOS is preparing your business assets.</p>
+      </div>
+    </section>
+    <section id="portalContent" class="subscriber-grid"></section>
+  </main>
+  <script src="/subscriber.js"></script>
+</body>
+</html>

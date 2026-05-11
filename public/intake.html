@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NexusOS Service Intake</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="intake-body">
+  <main class="intake-shell">
+    <section class="intake-hero">
+      <div class="mark">NO</div>
+      <p class="eyebrow">NexusOS Service Intake</p>
+      <h1>Tell us what you need. NexusOS will build the starter workspace.</h1>
+      <p>Use this form for a business website, AI assistant, social media help, lead follow-up, phone assistant, or a full launch kit.</p>
+    </section>
+
+    <form id="intakeForm" class="intake-form">
+      <div class="fields two">
+        <label>Your name
+          <input id="name" required placeholder="Jane Smith">
+        </label>
+        <label>Email
+          <input id="email" type="email" placeholder="jane@example.com">
+        </label>
+      </div>
+      <div class="fields two">
+        <label>Phone
+          <input id="phone" placeholder="555-555-5555">
+        </label>
+        <label>Business name
+          <input id="businessName" placeholder="Smith Cleaning Service">
+        </label>
+      </div>
+      <div class="fields two">
+        <label>Business type
+          <input id="industry" placeholder="Cleaning, catering, salon, detailing...">
+        </label>
+        <label>Location
+          <input id="location" placeholder="Atlanta, Dallas, Lagos...">
+        </label>
+      </div>
+      <label>What do you need help with?
+        <textarea id="needs" rows="5" placeholder="I need a website, AI assistant, social media posts, lead follow-up, and phone support."></textarea>
+      </label>
+      <button class="primary" type="submit">Create my NexusOS starter workspace</button>
+      <pre id="intakeResult">Your generated workspace details will appear here.</pre>
+    </form>
+  </main>
+  <script src="/intake.js"></script>
+</body>
+</html>

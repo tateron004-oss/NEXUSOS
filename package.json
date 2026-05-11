@@ -1,0 +1,16 @@
+{
+  "name": "nexusos-command-app",
+  "version": "0.10.0",
+  "private": true,
+  "description": "NexusOS AI services operating system for small business client workspaces.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check public/app.js && node --check scripts/smoke-test.js && node --check scripts/browser-regression.js",
+    "smoke": "node scripts/smoke-test.js",
+    "browser:regression": "node scripts/browser-regression.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
