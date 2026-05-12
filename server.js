@@ -18,6 +18,7 @@ const BUSINESS_CLIENTS = path.join(WORKSPACE, "11_Business_Builder", "Clients");
 const APP_NAME = "NexusOS";
 const APP_VERSION = "0.10.0-saas-foundation";
 const AUTH_REQUIRED = process.env.AUTH_REQUIRED !== "false";
+const REQUIRE_LIVE_SERVICES = process.env.NEXUSOS_REQUIRE_LIVE_SERVICES === "true";
 const DEFAULT_ADMIN_EMAIL = process.env.NEXUSOS_ADMIN_EMAIL || "admin@nexusos.local";
 const DEFAULT_ADMIN_PASSWORD = process.env.NEXUSOS_ADMIN_PASSWORD || "nexusos-admin";
 const sessions = new Map();
@@ -49,6 +50,43 @@ const subscriptionPlans = {
     features: ["Everything in Growth", "Advanced assistant studio", "SMS-ready workflow", "Priority setup", "Monthly optimization review"]
   }
 };
+
+function integrationStatus() {
+  const database = Boolean(process.env.DATABASE_URL || (process.env.NEXUSOS_DATA_DIR || process.env.NEXUSOS_WORKSPACE_DIR));
+  const openai = Boolean(process.env.OPENAI_API_KEY);
+  const stripe = Boolean(process.env.STRIPE_SECRET_KEY);
+  const twilio = Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER);
+  return {
+    strictMode: REQUIRE_LIVE_SERVICES,
+    database: {
+      connected: database,
+      mode: process.env.DATABASE_URL ? "postgres-ready" : "persistent-file-store",
+      requiredEnv: "DATABASE_URL or persistent NEXUSOS_DATA_DIR/NEXUSOS_WORKSPACE_DIR"
+    },
+    openai: {
+      connected: openai,
+      mode: openai ? "live" : "not-connected",
+      requiredEnv: "OPENAI_API_KEY"
+    },
+    stripe: {
+      connected: stripe,
+      mode: stripe ? "live-checkout" : "not-connected",
+      requiredEnv: "STRIPE_SECRET_KEY"
+    },
+    twilio: {
+      connected: twilio,
+      mode: twilio ? "live-sms" : "not-connected",
+      requiredEnv: "TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER"
+    }
+  };
+}
+
+function requireIntegration(name) {
+  const status = integrationStatus()[name];
+  if (REQUIRE_LIVE_SERVICES && status && !status.connected) {
+    throw new Error(`${name} is not connected. Set ${status.requiredEnv} in Render.`);
+  }
+}
 
 const agentFiles = {
   coach: path.join(WORKSPACE, "00_Command_Center", "COACHOS_COMMAND_CENTER.md"),
@@ -1386,6 +1424,7 @@ function createSubscriberWorkspace(body) {
 }
 
 async function createCheckout(body, origin) {
+  requireIntegration("stripe");
   const plan = subscriptionPlans[body.plan] || subscriptionPlans.starter;
   if (!body.email) throw new Error("Email is required for subscription setup");
   const created = createSubscriberWorkspace(body);
@@ -1717,6 +1756,7 @@ function httpsForm(url, auth, fields) {
 }
 
 async function liveAssistantReply(workspace, message) {
+  requireIntegration("openai");
   if (!process.env.OPENAI_API_KEY) {
     return { mode: "simulated", reply: testAssistantReply(workspace, message) };
   }
@@ -1736,6 +1776,7 @@ async function liveAssistantReply(workspace, message) {
 }
 
 async function sendSms(body) {
+  requireIntegration("twilio");
   const to = String(body.to || "").trim();
   const message = String(body.message || "").trim();
   if (!to || !message) throw new Error("Phone number and message are required");
@@ -1768,10 +1809,10 @@ function readiness() {
     { name: "outputs", ok: fs.existsSync(OUTPUTS), detail: OUTPUTS },
     { name: "clients", ok: fs.existsSync(BUSINESS_CLIENTS), detail: BUSINESS_CLIENTS },
     { name: "public", ok: fs.existsSync(PUBLIC), detail: PUBLIC },
-    { name: "database", ok: Boolean(process.env.DATABASE_URL), detail: process.env.DATABASE_URL ? "configured" : "not configured; local file database active" },
-    { name: "aiProvider", ok: Boolean(process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_API_KEY), detail: process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_API_KEY ? "configured" : "not configured; local simulated assistant mode active" },
-    { name: "phoneProvider", ok: Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN), detail: process.env.TWILIO_ACCOUNT_SID ? "configured" : "not configured; phone workflow package mode active" },
-    { name: "billingProvider", ok: Boolean(process.env.STRIPE_SECRET_KEY), detail: process.env.STRIPE_SECRET_KEY ? "configured" : "not configured; demo subscription mode active" }
+    { name: "database", ok: integrationStatus().database.connected, detail: integrationStatus().database.mode },
+    { name: "aiProvider", ok: integrationStatus().openai.connected, detail: integrationStatus().openai.mode },
+    { name: "phoneProvider", ok: integrationStatus().twilio.connected, detail: integrationStatus().twilio.mode },
+    { name: "billingProvider", ok: integrationStatus().stripe.connected, detail: integrationStatus().stripe.mode }
   ];
   const coreNames = ["workspace", "auth", "dataDir", "outputs", "clients", "public"];
   const integrationNames = ["database", "aiProvider", "phoneProvider", "billingProvider"];
@@ -1785,6 +1826,7 @@ function readiness() {
     coreReady,
     liveIntegrationsReady,
     integrationMode: liveIntegrationsReady ? "live" : "hybrid",
+    integrations: integrationStatus(),
     mode: process.env.NODE_ENV || "development",
     note: liveIntegrationsReady
       ? "Core SaaS and live integrations are configured."
@@ -1880,6 +1922,7 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname === "/api/healthz") return json(res, 200, { ok: true, app: APP_NAME, version: APP_VERSION });
     if (url.pathname === "/api/readiness") return json(res, 200, readiness());
+    if (url.pathname === "/api/integrations") return json(res, 200, integrationStatus());
     if (url.pathname === "/api/auth/me") return json(res, 200, { user: publicUser(currentUser(req)), authRequired: AUTH_REQUIRED });
 
     if (url.pathname === "/api/auth/login" && req.method === "POST") {

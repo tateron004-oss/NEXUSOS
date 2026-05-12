@@ -40,6 +40,9 @@ async function main() {
   const subscriber = await get("/subscriber.html");
   assert(subscriber.includes("Subscriber Portal"), "subscriber portal page missing");
 
+  const status = await get("/status.html");
+  assert(status.includes("Live Service Status"), "status page missing");
+
   const css = await get("/styles.css");
   assert(css.includes(".login-view"), "login styles missing");
   assert(css.includes(".workflow-editor"), "workflow editor styles missing");
@@ -58,6 +61,9 @@ async function main() {
   const subscriberJs = await get("/subscriber.js");
   assert(subscriberJs.includes("/api/subscriber/portal"), "subscriber portal API wiring missing");
   assert(subscriberJs.includes("/api/subscriber/login"), "subscriber login API wiring missing");
+
+  const statusJs = await get("/status.js");
+  assert(statusJs.includes("/api/readiness"), "status API wiring missing");
 
   console.log("NexusOS browser regression passed");
 }

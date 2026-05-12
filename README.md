@@ -27,6 +27,12 @@ Pricing/subscriptions:
 http://127.0.0.1:4288/pricing.html
 ```
 
+Live service status:
+
+```text
+http://127.0.0.1:4288/status.html
+```
+
 ## Core Workflows
 
 - Sign in with secure local admin credentials.
@@ -34,6 +40,7 @@ http://127.0.0.1:4288/pricing.html
 - Public intake automatically creates a client workspace, landing page, assistant package, phone workflow, and admin follow-up note.
 - Share `/pricing.html` to demo subscription tiers and create subscriber portals.
 - Subscribers can sign in to `/subscriber.html` with email and generated temporary password.
+- Use `/status.html` to verify whether OpenAI, Stripe, Twilio, and persistence are truly connected.
 - Run an agentic AI workflow that coordinates specialist agents across intake, business build, landing pages, assistant studio, marketing, CRM, phone, and QA.
 - Create a full client business kit.
 - Open a client workspace.
@@ -87,3 +94,5 @@ Without these credentials, NexusOS uses local file persistence, simulated assist
 `liveIntegrationsReady` means external services are fully configured: hosted database, live AI, and phone/SMS provider.
 
 This lets NexusOS be production-ready as a core SaaS while clearly showing whether live integrations are active or running in safe fallback mode.
+
+Set `NEXUSOS_REQUIRE_LIVE_SERVICES=true` after adding real OpenAI, Stripe, and Twilio credentials if you want dependent workflows to fail loudly instead of using fallback behavior.

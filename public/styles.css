@@ -692,6 +692,14 @@ textarea { resize: vertical; line-height: 1.45; }
   color: var(--green-dark);
   font-weight: 900;
 }
+.status-live {
+  border-color: #9fd3be !important;
+  background: #f1fbf6 !important;
+}
+.status-missing {
+  border-color: #d9c59a !important;
+  background: #fffaf0 !important;
+}
 
 @media (max-width: 1000px) {
   body { grid-template-columns: 1fr; }

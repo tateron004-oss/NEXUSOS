@@ -13,6 +13,8 @@ services:
         value: 0.0.0.0
       - key: AUTH_REQUIRED
         value: true
+      - key: NEXUSOS_REQUIRE_LIVE_SERVICES
+        value: false
       - key: NEXUSOS_WORKSPACE_DIR
         value: /var/data/workspace
       - key: NEXUSOS_DATA_DIR
