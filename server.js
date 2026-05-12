@@ -5,6 +5,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const PORT = Number(process.env.PORT || 4288);
+const HOST = process.env.HOST || (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1");
 const ROOT = __dirname;
 const LOCAL_WORKSPACE = path.resolve(ROOT, "..", "CoachOS");
 const WORKSPACE = process.env.NEXUSOS_WORKSPACE_DIR || (fs.existsSync(LOCAL_WORKSPACE) ? LOCAL_WORKSPACE : path.join(ROOT, "workspace"));
@@ -2041,6 +2042,6 @@ const server = http.createServer(async (req, res) => {
 
 ensureDir(OUTPUTS);
 ensureDir(BUSINESS_CLIENTS);
-server.listen(PORT, "127.0.0.1", () => {
-  console.log(`${APP_NAME} Command App running at http://127.0.0.1:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`${APP_NAME} Command App running on ${HOST}:${PORT}`);
 });

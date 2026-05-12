@@ -9,6 +9,8 @@ services:
         value: production
       - key: PORT
         value: 4288
+      - key: HOST
+        value: 0.0.0.0
       - key: AUTH_REQUIRED
         value: true
       - key: NEXUSOS_WORKSPACE_DIR
