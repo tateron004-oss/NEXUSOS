@@ -43,6 +43,18 @@ async function main() {
   const status = await get("/status.html");
   assert(status.includes("Live Service Status"), "status page missing");
 
+  const reset = await get("/reset-password.html");
+  assert(reset.includes("Reset your password"), "reset password page missing");
+
+  const terms = await get("/terms.html");
+  assert(terms.includes("Terms of Service"), "terms page missing");
+
+  const privacy = await get("/privacy.html");
+  assert(privacy.includes("Privacy Policy"), "privacy page missing");
+
+  const refund = await get("/refund.html");
+  assert(refund.includes("Refund Policy"), "refund page missing");
+
   const css = await get("/styles.css");
   assert(css.includes(".login-view"), "login styles missing");
   assert(css.includes(".workflow-editor"), "workflow editor styles missing");
@@ -64,6 +76,9 @@ async function main() {
 
   const statusJs = await get("/status.js");
   assert(statusJs.includes("/api/readiness"), "status API wiring missing");
+
+  const resetJs = await get("/reset-password.js");
+  assert(resetJs.includes("/api/subscriber/password-reset"), "password reset API wiring missing");
 
   console.log("NexusOS browser regression passed");
 }

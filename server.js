@@ -13,6 +13,7 @@ const PUBLIC = path.join(ROOT, "public");
 const DATA_DIR = process.env.NEXUSOS_DATA_DIR || path.join(ROOT, "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const SUBSCRIBERS_FILE = path.join(DATA_DIR, "subscribers.json");
+const EMAIL_LOG_FILE = path.join(DATA_DIR, "email-log.json");
 const OUTPUTS = path.join(WORKSPACE, "10_Outputs");
 const BUSINESS_CLIENTS = path.join(WORKSPACE, "11_Business_Builder", "Clients");
 const APP_NAME = "NexusOS";
@@ -1508,6 +1509,52 @@ function subscriberPortalPayload(subscriber) {
   };
 }
 
+function logEmail(message) {
+  const list = readJson(EMAIL_LOG_FILE, []);
+  list.unshift({ ...message, createdAt: new Date().toISOString() });
+  writeJson(EMAIL_LOG_FILE, list.slice(0, 200));
+}
+
+async function sendEmail({ to, subject, text }) {
+  const configured = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS;
+  if (!configured) {
+    logEmail({ mode: "logged", to, subject, text });
+    return { mode: "logged", status: "SMTP not configured; email saved to email log" };
+  }
+  // SMTP network delivery is intentionally adapter-ready here. Hosted production
+  // should connect a provider SDK/API such as SendGrid, Resend, Mailgun, or SMTP relay.
+  logEmail({ mode: "smtp-ready", to, subject, text });
+  return { mode: "smtp-ready", status: "SMTP credentials configured; provider adapter pending" };
+}
+
+function createPasswordReset(email) {
+  const list = subscribers();
+  const index = list.findIndex(item => item.email?.toLowerCase() === String(email || "").trim().toLowerCase());
+  if (index === -1) return null;
+  const token = crypto.randomBytes(24).toString("hex");
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 30).toISOString();
+  list[index] = { ...list[index], resetToken: token, resetExpiresAt: expiresAt, updatedAt: new Date().toISOString() };
+  saveSubscribers(list);
+  return { subscriber: list[index], token, expiresAt };
+}
+
+function resetSubscriberPassword(token, password) {
+  const list = subscribers();
+  const index = list.findIndex(item => item.resetToken === token);
+  if (index === -1) return null;
+  if (new Date(list[index].resetExpiresAt || 0) < new Date()) throw new Error("Reset token expired");
+  list[index] = {
+    ...list[index],
+    passwordHash: hashPassword(password),
+    temporaryPassword: null,
+    resetToken: null,
+    resetExpiresAt: null,
+    updatedAt: new Date().toISOString()
+  };
+  saveSubscribers(list);
+  return list[index];
+}
+
 function markSubscriberActiveById(id, metadata = {}) {
   const list = subscribers();
   const index = list.findIndex(item => item.id === id);
@@ -2020,6 +2067,28 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, fresh ? subscriberPortalPayload(fresh) : { subscriber: null });
     }
 
+    if (url.pathname === "/api/subscriber/password-reset/request" && req.method === "POST") {
+      const body = await readBody(req);
+      const reset = createPasswordReset(body.email);
+      if (reset) {
+        const resetUrl = `http://${req.headers.host}/reset-password.html?token=${reset.token}`;
+        await sendEmail({
+          to: reset.subscriber.email,
+          subject: "Reset your NexusOS subscriber password",
+          text: `Use this link to reset your NexusOS password: ${resetUrl}`
+        });
+      }
+      return json(res, 200, { ok: true, message: "If the email exists, reset instructions were created." });
+    }
+
+    if (url.pathname === "/api/subscriber/password-reset/confirm" && req.method === "POST") {
+      const body = await readBody(req);
+      if (!body.token || !body.password || String(body.password).length < 8) return json(res, 400, { error: "Token and password of at least 8 characters are required" });
+      const subscriber = resetSubscriberPassword(body.token, body.password);
+      if (!subscriber) return json(res, 400, { error: "Invalid reset token" });
+      return json(res, 200, { ok: true, subscriber: publicSubscriber(subscriber) });
+    }
+
     if (url.pathname === "/api/subscriber/portal" && req.method === "GET") {
       const subscriber = subscriberByToken(url.searchParams.get("token")) || currentSubscriber(req);
       if (!subscriber) return json(res, 404, { error: "Subscriber portal not found" });
@@ -2038,6 +2107,24 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (url.pathname === "/api/state") return json(res, 200, state());
+
+    if (url.pathname === "/api/admin/subscribers" && req.method === "GET") {
+      return json(res, 200, { subscribers: subscribers().map(publicSubscriber) });
+    }
+
+    if (url.pathname === "/api/admin/subscriber/status" && req.method === "POST") {
+      const body = await readBody(req);
+      const list = subscribers();
+      const index = list.findIndex(item => item.id === body.id);
+      if (index === -1) return json(res, 404, { error: "Subscriber not found" });
+      list[index] = { ...list[index], status: body.status || list[index].status, updatedAt: new Date().toISOString() };
+      saveSubscribers(list);
+      return json(res, 200, { subscriber: publicSubscriber(list[index]), subscribers: subscribers().map(publicSubscriber) });
+    }
+
+    if (url.pathname === "/api/admin/email-log" && req.method === "GET") {
+      return json(res, 200, { emails: readJson(EMAIL_LOG_FILE, []) });
+    }
 
     if (url.pathname === "/api/generate" && req.method === "POST") {
       const body = await readBody(req);

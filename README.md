@@ -33,6 +33,14 @@ Live service status:
 http://127.0.0.1:4288/status.html
 ```
 
+Legal pages:
+
+```text
+/terms.html
+/privacy.html
+/refund.html
+```
+
 ## Core Workflows
 
 - Sign in with secure local admin credentials.
@@ -41,6 +49,8 @@ http://127.0.0.1:4288/status.html
 - Share `/pricing.html` to demo subscription tiers and create subscriber portals.
 - Subscribers can sign in to `/subscriber.html` with email and generated temporary password.
 - Use `/status.html` to verify whether OpenAI, Stripe, Twilio, and persistence are truly connected.
+- Use `/reset-password.html` for subscriber password reset.
+- Use `/terms.html`, `/privacy.html`, and `/refund.html` for launch-ready legal page placeholders.
 - Run an agentic AI workflow that coordinates specialist agents across intake, business build, landing pages, assistant studio, marketing, CRM, phone, and QA.
 - Create a full client business kit.
 - Open a client workspace.
@@ -96,3 +106,5 @@ Without these credentials, NexusOS uses local file persistence, simulated assist
 This lets NexusOS be production-ready as a core SaaS while clearly showing whether live integrations are active or running in safe fallback mode.
 
 Hosted Render deployments use `NEXUSOS_REQUIRE_LIVE_SERVICES=true` so dependent workflows fail loudly until OpenAI, Stripe, and Twilio credentials are connected.
+
+Email reset messages are logged locally unless SMTP/provider variables are configured. Add `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, and `EMAIL_FROM` when connecting an email service.

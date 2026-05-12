@@ -95,6 +95,41 @@ function renderOutputs() {
   });
 }
 
+async function renderSubscribers() {
+  if (!state) return;
+  try {
+    const result = await api("/api/admin/subscribers");
+    $("#subscriberList").innerHTML = result.subscribers.length
+      ? result.subscribers.map(item => `
+        <article class="output-item">
+          <strong>${escapeHtml(item.businessName || item.email)}</strong>
+          <span>${escapeHtml(item.email)} - ${escapeHtml(item.plan)} - ${escapeHtml(item.status)}</span>
+          <div class="mini-actions">
+            <a href="/subscriber.html?token=${item.portalToken}" target="_blank" rel="noreferrer">Portal</a>
+            <button type="button" data-sub-status="${item.id}" data-status="active">Activate</button>
+            <button type="button" data-sub-status="${item.id}" data-status="paused">Pause</button>
+          </div>
+        </article>
+      `).join("")
+      : `<p>No subscribers yet.</p>`;
+    document.querySelectorAll("[data-sub-status]").forEach(button => {
+      button.onclick = () => updateSubscriberStatus(button.dataset.subStatus, button.dataset.status);
+    });
+  } catch (error) {
+    $("#subscriberList").innerHTML = `<p>${escapeHtml(error.message)}</p>`;
+  }
+}
+
+async function updateSubscriberStatus(id, status) {
+  try {
+    await api("/api/admin/subscriber/status", { method: "POST", body: { id, status } });
+    await renderSubscribers();
+    toast("Subscriber updated");
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
 function workflowCards(client) {
   return client.workflow.map(item => `
     <article class="workflow-card ${item.complete ? "complete" : ""}">
@@ -527,6 +562,7 @@ function render() {
     .join(" ") + "...";
   renderAgents();
   renderOutputs();
+  renderSubscribers();
   $("#buildBusinessBtn").classList.toggle("hidden", activeAgent !== "business");
   if (!activeClientSlug && state.clients?.length) openClient(state.clients[0].slug);
 }

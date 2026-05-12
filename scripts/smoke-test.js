@@ -101,6 +101,12 @@ async function main() {
   });
   assert(subscriberLogin.subscriber.email === checkout.subscriber.email, "subscriber login failed");
 
+  const resetRequest = await request("/api/subscriber/password-reset/request", {
+    method: "POST",
+    body: { email: checkout.subscriber.email }
+  });
+  assert(resetRequest.ok, "password reset request failed");
+
   const webhookPayload = JSON.stringify({
       type: "checkout.session.completed",
       data: {

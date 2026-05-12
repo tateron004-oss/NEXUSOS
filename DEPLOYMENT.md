@@ -22,6 +22,10 @@
 - `TWILIO_PHONE_NUMBER`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
+- `SMTP_HOST`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `EMAIL_FROM`
 
 ## Persistence
 
@@ -77,6 +81,14 @@ NEXUSOS_WORKSPACE_DIR=/var/data/workspace
 npm.cmd run check
 npm.cmd run smoke
 npm.cmd run browser:regression
+```
+
+Optional Playwright scaffold:
+
+```powershell
+npm install -D @playwright/test
+npx playwright install
+npm run test:e2e
 ```
 
 For a hosted URL:
