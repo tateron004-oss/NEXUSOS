@@ -400,6 +400,21 @@ function readBody(req) {
   });
 }
 
+function readRawBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", chunk => {
+      body += chunk;
+      if (body.length > 1_000_000) {
+        req.destroy();
+        reject(new Error("Request body too large"));
+      }
+    });
+    req.on("end", () => resolve(body));
+    req.on("error", reject);
+  });
+}
+
 function safeSlug(value) {
   return String(value || "nexusos-output")
     .toLowerCase()
@@ -1522,6 +1537,30 @@ function handleStripeWebhook(body) {
   return { received: true, updated: false, event: event.type || "unknown" };
 }
 
+function verifyStripeSignature(rawBody, signatureHeader) {
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    if (REQUIRE_LIVE_SERVICES) throw new Error("STRIPE_WEBHOOK_SECRET is required for strict live-service mode");
+    return { verified: false, reason: "webhook secret not configured" };
+  }
+  const parts = Object.fromEntries(String(signatureHeader || "")
+    .split(",")
+    .map(part => part.split("="))
+    .filter(pair => pair.length === 2)
+    .map(([key, value]) => [key, value]));
+  if (!parts.t || !parts.v1) throw new Error("Missing Stripe signature timestamp or v1 signature");
+  const payload = `${parts.t}.${rawBody}`;
+  const expected = crypto
+    .createHmac("sha256", process.env.STRIPE_WEBHOOK_SECRET)
+    .update(payload)
+    .digest("hex");
+  const actual = Buffer.from(parts.v1, "hex");
+  const expectedBuffer = Buffer.from(expected, "hex");
+  if (actual.length !== expectedBuffer.length || !crypto.timingSafeEqual(actual, expectedBuffer)) {
+    throw new Error("Invalid Stripe webhook signature");
+  }
+  return { verified: true };
+}
+
 function agenticPlan(body) {
   const request = String(body.request || body.needs || "").toLowerCase();
   const wantsFullBuild = /all|full|complete|everything|business|launch|website|assistant|social|phone|lead/.test(request);
@@ -1988,8 +2027,10 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (url.pathname === "/api/stripe/webhook" && req.method === "POST") {
-      const result = handleStripeWebhook(await readBody(req));
-      return json(res, 200, result);
+      const rawBody = await readRawBody(req);
+      const signature = verifyStripeSignature(rawBody, req.headers["stripe-signature"]);
+      const result = handleStripeWebhook(rawBody);
+      return json(res, 200, { ...result, signature });
     }
 
     if (url.pathname.startsWith("/api/") && !currentUser(req)) {

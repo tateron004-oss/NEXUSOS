@@ -38,6 +38,14 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function stripeSignature(payload, secret) {
+  const crypto = require("crypto");
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signedPayload = `${timestamp}.${payload}`;
+  const signature = crypto.createHmac("sha256", secret).update(signedPayload).digest("hex");
+  return `t=${timestamp},v1=${signature}`;
+}
+
 async function main() {
   const health = await request("/api/healthz");
   assert(health.ok && health.app === "NexusOS", "health check failed");
@@ -93,9 +101,7 @@ async function main() {
   });
   assert(subscriberLogin.subscriber.email === checkout.subscriber.email, "subscriber login failed");
 
-  const webhook = await request("/api/stripe/webhook", {
-    method: "POST",
-    body: {
+  const webhookPayload = JSON.stringify({
       type: "checkout.session.completed",
       data: {
         object: {
@@ -105,7 +111,29 @@ async function main() {
           metadata: { subscriberId: checkout.subscriber.id }
         }
       }
-    }
+    });
+  const webhook = await new Promise((resolve, reject) => {
+    const url = new URL("/api/stripe/webhook", base);
+    const req = http.request(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(cookie ? { cookie } : {}),
+        "stripe-signature": process.env.STRIPE_WEBHOOK_SECRET ? stripeSignature(webhookPayload, process.env.STRIPE_WEBHOOK_SECRET) : "",
+        "content-length": Buffer.byteLength(webhookPayload)
+      }
+    }, res => {
+      let data = "";
+      res.on("data", chunk => data += chunk);
+      res.on("end", () => {
+        const parsed = data ? JSON.parse(data) : {};
+        if (res.statusCode < 200 || res.statusCode >= 300) return reject(new Error(`/api/stripe/webhook failed: ${res.statusCode} ${parsed.error || data}`));
+        resolve(parsed);
+      });
+    });
+    req.on("error", reject);
+    req.write(webhookPayload);
+    req.end();
   });
   assert(webhook.received, "stripe webhook failed");
 

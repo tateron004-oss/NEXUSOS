@@ -95,4 +95,4 @@ Without these credentials, NexusOS uses local file persistence, simulated assist
 
 This lets NexusOS be production-ready as a core SaaS while clearly showing whether live integrations are active or running in safe fallback mode.
 
-Set `NEXUSOS_REQUIRE_LIVE_SERVICES=true` after adding real OpenAI, Stripe, and Twilio credentials if you want dependent workflows to fail loudly instead of using fallback behavior.
+Hosted Render deployments use `NEXUSOS_REQUIRE_LIVE_SERVICES=true` so dependent workflows fail loudly until OpenAI, Stripe, and Twilio credentials are connected.

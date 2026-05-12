@@ -11,15 +11,48 @@
 
 - `NEXUSOS_ADMIN_EMAIL`
 - `NEXUSOS_ADMIN_PASSWORD`
-- `DATABASE_URL`
+- `NEXUSOS_REQUIRE_LIVE_SERVICES=true`
 
-## Optional Live Service Secrets
+## Live Service Secrets
 
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_PHONE_NUMBER`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+
+## Persistence
+
+The included Render blueprint uses a persistent disk:
+
+- `NEXUSOS_DATA_DIR=/var/data/data`
+- `NEXUSOS_WORKSPACE_DIR=/var/data/workspace`
+
+For a database-backed SaaS, also set:
+
+- `DATABASE_URL`
+
+## Stripe Webhook
+
+Create a Stripe webhook endpoint pointing to:
+
+```text
+https://YOUR-RENDER-URL/api/stripe/webhook
+```
+
+Subscribe to:
+
+```text
+checkout.session.completed
+```
+
+Copy the webhook signing secret into:
+
+```text
+STRIPE_WEBHOOK_SECRET
+```
 
 ## Render Blueprint
 
